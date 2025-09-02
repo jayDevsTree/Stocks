@@ -3,10 +3,13 @@ import utils
 from fastapi import FastAPI,Depends,HTTPException,status,Response
 from sqlalchemy.orm import Session
 from . import users_models,users_schema
+from datetime import timedelta
+from fastapi.security import OAuth2PasswordRequestForm
 
 users_models.base.metadata.create_all(bind = engine)
 
 app = FastAPI()
+
 
 @app.get("/")
 async def root():
@@ -17,7 +20,7 @@ async def get_all_users(db:Session = Depends(stock_db)):
     all_users = db.query(users_models.users_table).all()
     return all_users
 
-@app.post("/createuser",status_code = status.HTTP_201_CREATED,response_model = users_schema.user_out)
+@app.post("/users/createuser",status_code = status.HTTP_201_CREATED,response_model = users_schema.user_out)
 async def create_user(user:users_schema.users_create,db: Session = Depends(stock_db)):
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
@@ -58,19 +61,34 @@ async def delete_user(user_id:int,db:Session = Depends(stock_db)):
     return Response(status_code = status.HTTP_204_NO_CONTENT)
 
 
-@app.post("/users/login")
-def login(user_credintial : users_schema.user_login,db : Session = Depends(stock_db)):
-    fetchUser = db.query(users_models.users_table).filter(users_models.users_table.email==user_credintial.email).first()
-   
+# @app.post("/users/login")
+# def login(user_credintial : users_schema.user_login,db : Session = Depends(stock_db)):
+#     fetchUser = db.query(users_models.users_table).filter(users_models.users_table.email==user_credintial.email).first()
+     
+#     if not fetchUser:
+#         raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED,
+#                             detail = f"Invalid Credentials User Not Found")
+#     if not utils.verify(user_credintial.password,fetchUser.password):
+#         raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED,
+#                             detail = f"Invalid Credentials")
+#     access_token = utils.create_access_token(data={"user_id":fetchUser.user_id},expires_delta = timedelta(minutes=30))
     
-    if not fetchUser:
-        raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED,
+#     return {"token":access_token,
+#             "token_type":"bearer"}
+    
+@app.post("/users/login")
+def login_form(user_form_info : OAuth2PasswordRequestForm = Depends(), db : Session = Depends(stock_db)): 
+    # in OAuth2PasswordRequestForm two fields username and password so here username is email  
+    in_db_user = db.query(users_models.users_table).filter(users_models.users_table.email == user_form_info.username).first() 
+    
+    if not in_db_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail = f"Invalid Credentials User Not Found")
-    if not utils.verify(user_credintial.password,fetchUser.password):
-        raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED,
-                            detail = f"Invalid Credentials")
-    return {"token":"create token"}
-
-
-
-
+        
+    if not utils.verify(user_form_info.password,in_db_user.password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail = f"Invalid Credentials")      
+    access_token = utils.create_access_token(data={"user_id":in_db_user.user_id},expires_delta = timedelta(minutes=30))
+    
+    return {"token":access_token,
+            "token_type":"bearer"}
