@@ -1,0 +1,32 @@
+firstly plan database
+then see whats think add in future
+how to use authentication
+how to authenticate each methods
+purchase stock
+dynamic purchase stock which change volume of stock 
+make one result type recipt which stock details
+
+
+
+
+
+now plan database
+symbol,company name , description,initial_price, diffrent year prices, volume
+
+in future need to modify it 
+purchase,volume of stock,selling price
+
+need logging file
+track each stocks actions one user which stocks info shows and methods use like get,post,put,delete
+
+need transactions
+its like new table like the recipt and result like structure which stock,price,volume,time stamp values
+
+
+need to add authentications and tokens for vaild user and security like eevry method its comeprehensively integrate
+bearar JWT token with time limitations
+
+
+extra thinks
+like make BaseModel which take care of things can user only need see with authentcations and
+ 
