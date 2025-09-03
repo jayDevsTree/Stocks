@@ -15,13 +15,14 @@ app = FastAPI()
 async def root():
     return{"Message":"This is a Users Table root Path"}
 
-@app.get("/users")
+@app.get("/users",response_model = list[users_schema.user_out])
 async def get_all_users(db:Session = Depends(stock_db)):
     all_users = db.query(users_models.users_table).all()
     return all_users
 
 @app.post("/users/createuser",status_code = status.HTTP_201_CREATED,response_model = users_schema.user_out)
 async def create_user(user:users_schema.users_create,db: Session = Depends(stock_db)):
+   
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
     new_user = users_models.users_table(**user.dict())
@@ -33,14 +34,14 @@ async def create_user(user:users_schema.users_create,db: Session = Depends(stock
     return new_user
 
 @app.get("/users/{user_id}",response_model = users_schema.user_out)
-async def get_user(user_id:int,db:Session = Depends(stock_db)):
+async def get_user(user_id:int,db:Session = Depends(stock_db),user_current: users_models.users_table = Depends(utils.get_current_user)):
     get_user = db.query(users_models.users_table).filter(users_models.users_table.user_id == user_id).first()
     if get_user == None:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,detail = f"User with id {user_id} not found")
     return get_user
 
 @app.put("/users/{user_id}",response_model = users_schema.user_out)
-async def update_user(user_id:int,user:users_schema.users_create,db:Session = Depends(stock_db)):
+async def update_user(user_id:int,user:users_schema.users_create,db:Session = Depends(stock_db),user_current: users_models.users_table = Depends(utils.get_current_user)):
     get_user = db.query(users_models.users_table).filter(users_models.users_table.user_id == user_id).first()
     if get_user == None:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,detail = f"User with id {user_id} not found")
@@ -52,7 +53,7 @@ async def update_user(user_id:int,user:users_schema.users_create,db:Session = De
     return get_user
 
 @app.delete("/users/{user_id}",status_code = status.HTTP_204_NO_CONTENT)
-async def delete_user(user_id:int,db:Session = Depends(stock_db)):
+async def delete_user(user_id:int,db:Session = Depends(stock_db),user_current: users_models.users_table = Depends(utils.get_current_user)):
     get_user = db.query(users_models.users_table).filter(users_models.users_table.user_id == user_id).first()
     if get_user == None:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,detail = f"User with id {user_id} not found")
@@ -79,15 +80,18 @@ async def delete_user(user_id:int,db:Session = Depends(stock_db)):
 @app.post("/users/login")
 def login_form(user_form_info : OAuth2PasswordRequestForm = Depends(), db : Session = Depends(stock_db)): 
     # in OAuth2PasswordRequestForm two fields username and password so here username is email  
-    in_db_user = db.query(users_models.users_table).filter(users_models.users_table.email == user_form_info.username).first() 
+    # in_db_user = db.query(users_models.users_table).filter(users_models.users_table.email == user_form_info.username,
+    #                                                        users_models.users_table.password == user_form_info.password).first()
+    in_db_user = db.query(users_models.users_table).filter(users_models.users_table.email == user_form_info.username).first()
+     # the use-info password need to encrypyt
     
     if not in_db_user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail = f"Invalid Credentials User Not Found")
         
     if not utils.verify(user_form_info.password,in_db_user.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail = f"Invalid Credentials")      
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail = f"Invalid Password")      
     access_token = utils.create_access_token(data={"user_id":in_db_user.user_id},expires_delta = timedelta(minutes=30))
     
     return {"token":access_token,
