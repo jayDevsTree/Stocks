@@ -91,7 +91,8 @@ def login_form(user_form_info : OAuth2PasswordRequestForm = Depends(), db : Sess
         
     if not helper.verify(user_form_info.password,in_db_user.password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail = f"Invalid Password")      
+                            detail = f"Invalid Password")  
+            
     access_token = helper.create_access_token(data={"user_id":in_db_user.user_id},expires_delta = timedelta(minutes=30))
     
     return {"token":access_token,
