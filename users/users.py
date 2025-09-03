@@ -86,7 +86,6 @@ def login_form(user_form_info : OAuth2PasswordRequestForm = Depends(), db : Sess
             "token_type":"bearer",
             "name": in_db_user.name}# this last ignore cause response model
     
-app.include_router(router)
 # @app.post("/users/login")
 # def login(user_credintial : users_schema.user_login,db : Session = Depends(stock_db)):
 #     fetchUser = db.query(users_models.users_table).filter(users_models.users_table.email==user_credintial.email).first()
