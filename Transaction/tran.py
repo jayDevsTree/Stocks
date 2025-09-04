@@ -51,11 +51,6 @@ def buy_stock(from_stock_data: tran_schema.tran_create, db: Session = Depends(st
 
 
 
-@app.post("/transaction/{transaction_id}", response_model = tran_schema.tran_show)
-def buy_stock(transaction_id : int,form_stock_data : tran_schema.tran_create,db : Session = Depends(stock_db)):
-    get_stockname = db.query(tran_models.tran_table).filter(tran_models.tran_table.stock_all.stock_name == form_stock_data.stock_name).first()
-    print(get_stockname)
-    return get_stockname
 
 
 
