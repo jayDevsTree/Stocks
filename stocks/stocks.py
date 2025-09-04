@@ -40,7 +40,7 @@ async def update_stock(stock_id : int, form_stock : stock_schema.stock_create, d
     get_stock_from_db = db.query(stock_models.stock_table).filter(stock_models.stock_table.stock_id == stock_id).first()
     if get_stock_from_db == None:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
-                            details= f"Stock with id {stock_id} not found")
+                            details= f"Stock with id {stock_id} not found.")
         
     get_stock_from_db.stock_name = form_stock.stock_name
     get_stock_from_db.stock_symbol = form_stock.stock_symbol
@@ -48,6 +48,8 @@ async def update_stock(stock_id : int, form_stock : stock_schema.stock_create, d
     get_stock_from_db.current_price= form_stock.current_price
     get_stock_from_db.highest_price= form_stock.highest_price
     get_stock_from_db.lowest_price = form_stock.lowest_price
+    get_stock_from_db.stock_remaining_volume = form_stock.stock_remaining_volume
+    get_stock_from_db.stock_total_volume = form_stock.stock_total_volume
     
     db.commit()
     db.refresh(get_stock_from_db)      
@@ -58,9 +60,10 @@ async def delete_stock(stock_id : int, db: Session = Depends(stock_db),user_curr
     get_stock = db.query(stock_models.stock_table).filter(stock_models.stock_table.stock_id == stock_id).first()
     if get_stock == None:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
-                            details = f"Stock with id {stock_id} not found")
+                            details = f"Stock with id {stock_id} not found.")
     db.delete(get_stock)
     db.commit()
+    
     return Response(status_code = status.HTTP_204_NO_CONTENT)
 
 

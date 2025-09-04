@@ -3,6 +3,7 @@ from typing import Optional
 
 
 class stock_create(BaseModel):
+    
     stock_id:Optional[int] = None
     industry_id:int
     stock_name:str
@@ -11,11 +12,15 @@ class stock_create(BaseModel):
     current_price:int
     highest_price:int
     lowest_price:int
+    stock_total_volume:int
+    stock_remaining_volume:int
     
 class stock_out(BaseModel):
+    
     stock_name:str
     stock_symbol:str
-    stock_description:str
+    # stock_description:str
     current_price:int
-    highest_price:int
-    lowest_price:int
+    # highest_price:int
+    # lowest_price:int
+    stock_remaining_volume:int
