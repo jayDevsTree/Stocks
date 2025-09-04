@@ -19,6 +19,8 @@ class stock_table(base):
     lowest_price = Column(Integer,nullable=False)
     stock_total_volume = Column(Integer,nullable=False)
     stock_remaining_volume = Column(Integer,nullable=False)
+    is_deleted = Column(Boolean,nullable=False)
+    deleted_at = Column(TIMESTAMP(timezone=True),nullable=True,server_default = text('now()'))
     stock_date = Column(TIMESTAMP(timezone=True),nullable=False,server_default = text('now()'))
     
     

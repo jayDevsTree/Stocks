@@ -3,6 +3,7 @@ from fastapi import FastAPI,Response,status,HTTPException,Depends,APIRouter
 from sqlalchemy.orm import Session
 from . import stock_models,stock_schema
 import helper
+from datetime import datetime
 
 stock_models.base.metadata.create_all(bind=engine)
 
@@ -12,6 +13,7 @@ router = APIRouter()
 @router.get("/")
 async def root():
     return {"message": "This is a Root path of Stock Table"}
+
 
 
 @router.post("/stocks/create", status_code = status.HTTP_201_CREATED, response_model = stock_schema.stock_out)
@@ -55,7 +57,7 @@ async def update_stock(stock_id : int, form_stock : stock_schema.stock_create, d
     db.refresh(get_stock_from_db)      
     return get_stock_from_db
 
-@router.delete("/stocks/{stock_id}",status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/stocks/delete/{stock_id}",status_code=status.HTTP_204_NO_CONTENT)
 async def delete_stock(stock_id : int, db: Session = Depends(stock_db),user_current: stock_models.stock_table = Depends(helper.get_current_user)):
     get_stock = db.query(stock_models.stock_table).filter(stock_models.stock_table.stock_id == stock_id).first()
     if get_stock == None:
@@ -67,3 +69,30 @@ async def delete_stock(stock_id : int, db: Session = Depends(stock_db),user_curr
     return Response(status_code = status.HTTP_204_NO_CONTENT)
 
 
+@router.patch("/stocks/{stock_id}")
+async def update_stock(stock_id : int, form_stock : stock_schema.stock_out_only_for_patch, db : Session = Depends(stock_db),user_current: stock_models.stock_table = Depends(helper.get_current_user)):
+    get_stock_from_db = db.query(stock_models.stock_table).filter(stock_models.stock_table.stock_id == stock_id).first()
+    if get_stock_from_db == None:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
+                            detail= f"Stock with id {stock_id} not found.")
+    for key, value in form_stock.dict(exclude_unset=True).items():
+        setattr(get_stock_from_db, key, value)
+        
+   
+    db.commit()
+    db.refresh(get_stock_from_db)      
+    return get_stock_from_db
+
+@router.delete("/stocks/{stock_id}",status_code=status.HTTP_204_NO_CONTENT)
+def soft_delete_not_db(stock_id : int , db : Session = Depends(stock_db)):
+    get_user = db.query(stock_models.stock_table).filter(stock_models.stock_table.stock_id == stock_id).first()
+    if get_user == None:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
+                            detail = f"Stock with id {stock_id} not found")
+    if get_user.is_deleted == True:
+        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST   ,
+                            detail = f"Stock with id {stock_id} already deleted")
+    get_user.is_deleted = True
+    get_user.deleted_at = datetime.utcnow() 
+    db.commit()
+    return Response(status_code = status.HTTP_204_NO_CONTENT)

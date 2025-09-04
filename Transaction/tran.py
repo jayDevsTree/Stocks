@@ -37,7 +37,6 @@ def buy_stock(from_stock_data: tran_schema.tran_create, db: Session = Depends(st
 
     total_price = from_stock_data.buy_volume * transaction.current_price
 
-    # update stock volume
     transaction.stock_remaining_volume -= from_stock_data.buy_volume
     db.commit()
     db.refresh(transaction)
@@ -49,6 +48,36 @@ def buy_stock(from_stock_data: tran_schema.tran_create, db: Session = Depends(st
         total_price=total_price,
         remaining_volume=transaction.stock_remaining_volume
     )
+
+
+
+@app.post("/transaction/{transaction_id}", response_model = tran_schema.tran_show)
+def buy_stock(transaction_id : int,form_stock_data : tran_schema.tran_create,db : Session = Depends(stock_db)):
+    get_stockname = db.query(tran_models.tran_table).filter(tran_models.tran_table.stock_all.stock_name == form_stock_data.stock_name).first()
+    print(get_stockname)
+    return get_stockname
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # def tran_id_from_email(user_email_id : int, db: Session = Depends(stock_db)):
