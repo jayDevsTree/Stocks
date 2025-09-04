@@ -3,7 +3,7 @@ from typing import Optional
 
 
 class stock_create(BaseModel):
-    stock_id:int
+    stock_id:Optional[int] = None
     industry_id:int
     stock_name:str
     stock_symbol:str
