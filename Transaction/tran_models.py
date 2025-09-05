@@ -18,9 +18,11 @@ class tran_table(base):
     buy_volume = Column(Integer,nullable=True)
     current_price = Column(Integer,nullable=False)
     total_price = Column(Integer,nullable=True)
+    is_deleted = Column(Boolean, nullable=False, server_default="false")
     transaction_date = Column(TIMESTAMP(timezone=True),nullable=False,server_default = text('now()'))
-    users_all = relationship("users_table")
-    stock_all = relationship("stock_table")
+    
+    users = relationship("users_table")
+    stock = relationship("stock_table")
     
     
     

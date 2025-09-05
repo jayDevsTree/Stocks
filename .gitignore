@@ -6,3 +6,5 @@ __pycache__/
 # Environment files
 .env
 *.env
+Nirmala.ttf
+invoices/

@@ -1,25 +1,22 @@
 from pydantic import BaseModel,EmailStr
 from typing import Optional
-
+from datetime import datetime
+    
 class tran_create(BaseModel):
-    # user_id:int
-    # stock_id:int
     stock_name:str
-    buy_volume:int
-        
+    buy_volume: int
+    
 class tran_show(BaseModel):
-    id:int
-    email:EmailStr
+    transaction_id: Optional[int]
+    name:str
     stock_name:str
     buy_volume:int
-    current_value:float
-    total_value:float
-    buy_date:str
+    current_price:int
+    total_price:int
+    stock_description:str
+    transaction_date:Optional[datetime]
     
-  
+    class Config:
+        orm_mode = True
     
     
-
-    
-
-   
