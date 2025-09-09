@@ -14,10 +14,10 @@ class stock_show(BaseModel):
     stock_id: int
     stock_symbol: str
     stock_name: str
-    
     stock_description: str
     class Config:
         orm_mode = True
+
 
 
 class tran_create(BaseModel):

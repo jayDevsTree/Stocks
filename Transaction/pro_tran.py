@@ -155,6 +155,32 @@ async def update_transaction(tran_id: int,form_data: pro_tran_schema.tran_update
     db.refresh(tran)
     return tran
 
+@router.post("/sell",response_model = pro_tran_schema.tran_show)
+async def sell_stock(form_data: pro_tran_schema.tran_create,db: Session = Depends(stock_db)):
+    stock_sell = db.query(tran_models.stock_table).filter(tran_models.stock_table.stock_name == form_data.stock_name).first() 
+    if stock_sell is None:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND,
+                            detail= f"stock {form_data.stock_name} not found.")
+    buyer = db.query(tran_models.tran_table).filter(tran_models.tran_table.stock_id == stock_sell.stock_id).first()
+    # if form_data.buy_volume > : buyer.
+    #     raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST,
+    #                         detail = f"You have only {stock_sell.buy_volume} stocks to sell.")
+    
+    stock_sell.buy_volume -= form_data.buy_volume
+    
+    sell_tran =tran_models.tran_table(
+        stock_id = stock_sell.stock_id,
+        sell_volume = form_data.buy_volume,
+        selling_price = stock_sell.current_price,
+        total_price = stock_sell.current_price * form_data.buy_volume,
+    )
+    db.add(sell_tran)
+    db.commit()
+    db.refresh(sell_tran)
+    
+    return sell_tran
+
+
 @router.get("/invoice/{tran_id}")
 def get_invoice(tran_id: int, db: Session = Depends(stock_db)):
     transaction = db.query(tran_models.tran_table).filter(tran_models.tran_table.transaction_id == tran_id).first()
