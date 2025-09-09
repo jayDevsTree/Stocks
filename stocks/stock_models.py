@@ -6,6 +6,7 @@ from datetime import datetime
 from industry.industry_models import industry_table
 
 class stock_table(base):
+    
     __tablename__ = "stock"
     
     stock_id = Column(Integer,primary_key=True,nullable=False)
@@ -16,6 +17,10 @@ class stock_table(base):
     current_price = Column(Integer,nullable=False)
     highest_price = Column(Integer,nullable=False)
     lowest_price = Column(Integer,nullable=False)
+    stock_total_volume = Column(Integer,nullable=False)
+    stock_remaining_volume = Column(Integer,nullable=False)
+    is_deleted = Column(Boolean,nullable=False)
+    deleted_at = Column(TIMESTAMP(timezone=True),nullable=True,server_default = text('now()'))
     stock_date = Column(TIMESTAMP(timezone=True),nullable=False,server_default = text('now()'))
     
     
